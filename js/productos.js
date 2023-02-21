@@ -7,7 +7,7 @@ const productos = [
         tipo:'Hogar',
         descripcion:'Taza de ceramica con forma de la cara del payaso IT',
         precio:3500,
-        img: '/assets/productos/taza-forma-cara.jpg',
+        img: 'assets/productos/taza-forma-cara.jpg',
     },
     {
         id:2,
