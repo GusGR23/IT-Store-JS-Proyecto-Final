@@ -7,7 +7,7 @@
             "tipo":"Hogar",
             "descripcion":"Taza de ceramica con forma de la cara del payaso IT",
             "precio":3500,
-            "img": "assets/productos/taza-forma-cara.jpg"
+            "img": "/assets/productos/taza-forma-cara.jpg"
         },
         {
             "id":2,
@@ -17,7 +17,7 @@
             "tipo": "Diversión",
             "descripcion":"Clásico juego de mesa con la tematica de la película.",
             "precio":10300,
-            "img":"assets/productos/monopoly-it.jpg"
+            "img":"/assets/productos/monopoly-it.jpg"
         },
         {
             "id":3,

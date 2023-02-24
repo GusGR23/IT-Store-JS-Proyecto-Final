@@ -24,7 +24,6 @@ const pintarProductos = () => {
     
     //Recorro el array y creo una card por cada elemento del mismo
     productos.forEach((item) =>{
-        console.log(item)
         //Estructura
         const itemCard = document.createElement("div");
         itemCard.classList.add('card');
