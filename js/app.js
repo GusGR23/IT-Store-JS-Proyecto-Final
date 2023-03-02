@@ -18,10 +18,10 @@ const productosContenedor = document.getElementById('productos-contenedor')
 
 //FX PARA CREAR LAS CARDS DE LOS PRODUCTOS
 const pintarProductos = () => {
-    
+
     //Vacio el contenedor productos para evitar duplicados cada vez que se llame a la funcion
     productosContenedor.innerHTML = []
-    
+
     //Recorro el array y creo una card por cada elemento del mismo
     productos.forEach((item) =>{
         //Estructura
@@ -60,14 +60,14 @@ const pintarProductos = () => {
     //Creo un nuevo array solo con la propiedad "tipo" de cada producto
     const tipoArray = productos.map((prod)=>prod.tipo)
 
-    //Con "...new Set(array)" hago que se eliminen los elementos duplicados 
+    //Con "...new Set(array)" hago que se eliminen los elementos duplicados
     //del array y quede uno solo de c/u
     const filtroProductos = [...new Set(tipoArray)]
 
     //Creo la opcion de filtro "Todos" para deshacer los filtros aplicados
     const tipoProdTodos = document.createElement(`li`)
     tipoProdTodos.innerHTML = `<button id="filtroTodos" type="button">Todos</button>`
-        //En caso de que el usuario elija esta opcion, se llama a la funcion para 
+        //En caso de que el usuario elija esta opcion, se llama a la funcion para
         //que se muestren todos los productos
     tipoProdTodos.addEventListener("click", pintarProductos)
     listaFiltro.appendChild(tipoProdTodos)
@@ -126,23 +126,110 @@ const pintarFiltrado = (filtrado) =>{
                 agregarAlCarrito(item.id)
         })
     })
-    
+
+}
+
+//Funcion vaciar carrito
+const vaciarCarrito = () =>{
+    carrito = []            //vaciamos el array carrito
+    carritoCantProd = 0     //reiniciamos el contador de productos del carrito
+    actualizarCarrito()     //actualizamos el modal para que se borren los items
+    localStorage.clear()    //borramos el LS
+    productos.forEach((item)=>{     //Reiniciamos la cantidad de cada producto
+        item.cantidad=1
+    })
 }
 
 //Vaciar carrito
 const btnVaciar = document.getElementById("btn-vaciar")
 btnVaciar.addEventListener("click", ()=>{
-    carrito = []            //vaciamos el array carrito
-    carritoCantProd = 0     //reiniciamos el contador de productos del carrito
-    actualizarCarrito()     //actualizamos el modal para que se borren los items
-    localStorage.clear()    //borramos el LS
-    productos.forEach((item)=>{     //Reiniciamos la cantidad de cada producto 
-        item.cantidad=1
-    })
+    vaciarCarrito()
     vaciadoToastify()
 })
+
 //Finalizar compra
 const btnFinalizar = document.getElementById("btn-finalizar")
+btnFinalizar.addEventListener('click', ()=>{
+    const steps = ['1', '2', '3', '4']
+    const swalQueueStep = Swal.mixin({
+        confirmButtonText: 'Siguiente',
+        cancelButtonText: 'Atras',
+        cancelButtonColor: '#DC3545',
+        confirmButtonColor: '#198754',
+        progressSteps: steps,
+        input: 'text',
+        inputAttributes: {
+            required: true
+        },
+        reverseButtons: true,
+        validationMessage: 'Este campo es obligatorio.'
+    })
+    async function idaYVuelta() {
+        const values = []
+        let currentStep
+        for (currentStep = 0; currentStep < steps.length;) {
+            if (steps[currentStep] == 1) {
+                var result = await swalQueueStep.fire({
+                    title: '¿Cual es tu nombre?',
+                    text: "Ingresa tu nombre completo",
+                    inputPlaceholder: "ej. Juan Peréz",
+                    inputValue: values[currentStep],
+                    showCancelButton: currentStep > 0,
+                    currentProgressStep: currentStep
+                })
+            } else if (steps[currentStep] == 2) {
+                var result = await swalQueueStep.fire({
+                    title: '¿Donde enviamos tu compra?',
+                    text: "Ingresa tu dirección",
+                    inputPlaceholder: "ej. Rivadavia 1000, Buenos Aires",
+                    inputValue: values[currentStep],
+                    showCancelButton: currentStep > 0,
+                    currentProgressStep: currentStep
+                })
+            } else if (steps[currentStep] == 3) {
+                var result = await swalQueueStep.fire({
+                    title: '¿Cual es tu mail?',
+                    text: "Ingresa tu dirección de correo electrónico",
+                    input: 'email',
+                    inputPlaceholder: "ej. juanperez@gmail.com",
+                    validationMessage: 'Ingresa un mail válido',
+                    inputValue: values[currentStep],
+                    showCancelButton: currentStep > 0,
+                    currentProgressStep: currentStep
+                })
+            } else if (steps[currentStep] == 4) {
+                var result = await swalQueueStep.fire({
+                    icon: "success",  
+                    title: "Gracias por tu compra",
+                    text: "Recibiras un mail con los detalles.",
+                    confirmButtonText: 'OK',
+                    showCancelButton: false,
+                    input: false,
+                    currentProgressStep: currentStep
+                })
+            } else {
+                break
+            }
+
+            //Agrego un condicional, si presiona el btn confirmar ("true"), avanza un paso
+            if (result.value) {
+                values[currentStep] = result.value
+                currentStep++
+            //En cambio si presiona el btn cancelar (atras), retrocede al paso anterior
+            } else if (result.dismiss === 'cancel') {
+                currentStep--
+            } else {
+                break
+            }
+            //Si se cumplen todos los pasos dispuestos en el array steps, se vaciará el carrito
+            if (currentStep === steps.length) {
+                vaciarCarrito();
+            }
+        }
+    }
+    idaYVuelta();
+})
+
 
 //Creacion de la seccion carrito
 let carrito = []
@@ -191,7 +278,7 @@ carritoHeader.prepend(carritoContador)
 const eliminarItem = (productoID)=>{
     //Traigo el producto a eliminar
     const prodEliminar = carrito.find(elim => elim.id===productoID)
-    
+
     //Verifico su cantidad en el carrito, si es mas de 1 disminuyo su cantidad
     if(prodEliminar.cantidad>1){
         prodEliminar.cantidad --
@@ -207,10 +294,10 @@ const eliminarItem = (productoID)=>{
 
 //Funcion para actualizar el carrito
 const actualizarCarrito=()=>{
-    
+
     //Se actualiza el contador del carrito
     const carritoCantProd = carrito.reduce((acc,prod)=>acc+prod.cantidad,0)
-    
+
     //Operador ternario para modificar la palabra producto/s segun cantidad de los mismos haya en el carrito
     carritoCantProd==1 ? carritoContador.innerHTML = `<span>${carritoCantProd}</span> producto` : carritoContador.innerHTML = `<span>${carritoCantProd}</span> productos`
 
@@ -232,14 +319,14 @@ const actualizarCarrito=()=>{
                 <button onclick="eliminarItem(${prod.id})" type="button" id="delete${prod.id}" class="material-symbols-outlined">delete</button>
             </li>
             <hr>
-        `      
+        `
     })
 
     //Utilizando la propiedad "importeFinal" y el metodo reduce, calculo el monto total del carrito
     const precioFinal = carrito.reduce((acc,prod)=>acc+prod.importeFinal,0)
     carritoMonto.innerText = `$${precioFinal}`
     carritoTotal.innerHTML = `<p>Total:</p><p>$${precioFinal}</p>`
-    
+
     //Guardamos en el localStorage
     const carritoJSON = JSON.stringify(carrito)
     localStorage.setItem('carrito', carritoJSON)
@@ -281,7 +368,7 @@ const agregarAlCarrito = (productoID) =>{
 }
 
 
-//Verificamos productos guardados en localStorage. 
+//Verificamos productos guardados en localStorage.
 //Es lo primero que hace la pagina al cargarse
 const carritoLS = JSON.parse(localStorage.getItem('carrito'))
 if(carritoLS){
